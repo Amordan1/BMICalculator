@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { Text, StyleSheet, View, Image, TextInput, TouchableOpacity } from 'react-native';
+import { Text, StyleSheet, View, Image, TextInput, TouchableOpacity, InteractionManager } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import bruschetta from './assets/bruschetta.png';
@@ -10,13 +10,21 @@ function HomeScreen({ navigation }) {
   const [show, setShow] = useState(false);
 
 
-  function onChange(event) {
+  async function onChange(event) {
+    console.log(event)
     if ((isNaN(event))){
+      setServing(0)
       setShow(true);
     };
     if (!isNaN(event)){
-      setShow(false);
-      setServing((event));
+      try {
+        setShow(false)
+        JSON.parse(event)
+        setServing((event));
+      } catch {
+        setServing(0)
+        JSON.parse(serving)
+      }
     }
  };
 
@@ -34,7 +42,7 @@ function HomeScreen({ navigation }) {
         style={styles.button}
         onPress={() => {
           navigation.navigate('Recipe', {
-            servingSize: JSON.parse(serving),
+            servingSize: serving,
             Desc: "Combine the ingredients add salt to taste. Top French bread slices with mixture"
           });
         }}
