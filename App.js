@@ -11,7 +11,6 @@ function HomeScreen({ navigation }) {
 
 
   async function onChange(event) {
-    console.log(event)
     if ((isNaN(event))){
       setServing(0)
       setShow(true);
