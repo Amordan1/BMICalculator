@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -7,8 +8,11 @@ import {
   TouchableOpacity,
   SafeAreaView,
 } from 'react-native';
-import * as SplashScreen from 'expo-splash-screen'
+import * as SplashScreen from 'expo-splash-screen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
+const heightKey = '@MyApp:key1';
+const weightKey = '@MyApp:key2';
 
 export default class App extends Component {
   state = {
@@ -18,9 +22,40 @@ export default class App extends Component {
     danger: false,
   };
 
-  onWeightChange = (weight) => this.setState({ weight });
-  onHeightChange = (height) => this.setState({ height });
+  constructor(props) {
+    super(props)
+    this.onLoad();
+  }
 
+  onLoad = async () => {
+    try {
+      const weight = await AsyncStorage.getItem(weightKey);
+      const height = await AsyncStorage.getItem(heightKey);
+      this.setState({ weight });
+      this.setState({ height });
+    } catch (error) {
+      Alert.alert('Error', 'There was an error while loading the data');
+    }
+  }
+
+  onSave = async () => {
+
+    try {
+      await AsyncStorage.setItem(weightKey, this.state.weight);
+      await AsyncStorage.setItem(heightKey, this.state.height);
+      Alert.alert('Saved', 'Successfully saved on device');
+    } catch (error) {
+      Alert.alert('Error', 'There was an error while saving the data');
+      console.log(error)
+    }
+  }
+
+  onWeightChange = (weight) => {
+    this.setState({ weight });
+  };
+  onHeightChange = (height) => { 
+    this.setState({ height });
+  };
   onCalc = async () => {
     this.setState({ results: 'Loading, please wait...' });
     if (isNaN(this.state.weight)) {
@@ -48,6 +83,7 @@ export default class App extends Component {
       this.setState({ results });
       this.heightText.focus();
     } else {
+      this.onSave();
       const danger = false;
       this.setState({ danger })
       const results = 'Body Mass Index is ' + ((this.state.weight/(this.state.height*this.state.height))*703).toFixed(1);
