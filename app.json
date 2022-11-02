@@ -1,15 +1,15 @@
 {
   "expo": {
-    "name": "HealthyRecipes",
-    "slug": "healthyrecipes-rm634127",
+    "name": "BMICalculator",
+    "slug": "BMICalculator-rm634127",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/weights.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/weights.png",
       "resizeMode": "contain",
-      "backgroundColor": "#000000"
+      "backgroundColor": "#34495e"
     },
     "updates": {
       "fallbackToCacheTimeout": 0

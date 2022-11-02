@@ -1,150 +1,170 @@
-import * as React from 'react';
-import { useState } from 'react';
-import { Text, StyleSheet, View, Image, TextInput, TouchableOpacity, InteractionManager } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import bruschetta from './assets/bruschetta.png';
+import React, { Component } from 'react';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  SafeAreaView,
+} from 'react-native';
+import * as SplashScreen from 'expo-splash-screen'
 
-function HomeScreen({ navigation }) {
-  const [serving, setServing] = useState(0);
-  const [show, setShow] = useState(false);
 
+export default class App extends Component {
+  state = {
+    results: '',
+    height: '',
+    weight: '',
+    danger: false,
+  };
 
-  async function onChange(event) {
-    if ((isNaN(event))){
-      setServing(0)
-      setShow(true);
+  onWeightChange = (weight) => this.setState({ weight });
+  onHeightChange = (height) => this.setState({ height });
+
+  onCalc = async () => {
+    this.setState({ results: 'Loading, please wait...' });
+    if (isNaN(this.state.weight)) {
+      const results = 'Weight must be a number.';
+      const danger = true;
+      this.setState({ danger })
+      this.setState({ results });
+      this.weightText.focus();      
+    } else if (('' === this.state.weight) ) {
+      const results = 'Please enter weight.';
+      const danger = true;
+      this.setState({ danger })
+      this.setState({ results });
+      this.weightText.focus();
+    } else if (isNaN(this.state.height)) {
+      const results = 'Height must be a number.';
+      const danger = true;
+      this.setState({ danger })
+      this.setState({ results });
+      this.heightText.focus();      
+    } else if (('' === this.state.height) ) {
+      const results = 'Please enter height.';
+      const danger = true;
+      this.setState({ danger })
+      this.setState({ results });
+      this.heightText.focus();
+    } else {
+      const danger = false;
+      this.setState({ danger })
+      const results = 'Body Mass Index is ' + ((this.state.weight/(this.state.height*this.state.height))*703).toFixed(1);
+      this.setState({ results });
     };
-    if (!isNaN(event)){
-      try {
-        setShow(false)
-        JSON.parse(event)
-        setServing((event));
-      } catch {
-        setServing(0)
-        JSON.parse(serving)
-      }
-    }
- };
+  }
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.titleText}>Bruschetta Recipe</Text>
-      <Image width={10} height={10} source={bruschetta}></Image>
-      {
-          show?
-          <Text style={styles.warnText}>Serving size must be a number.</Text>
-          :<Text style={styles.hide}></Text>
-      }
-      <TextInput style={styles.input} onChangeText={value => onChange(value)} placeholder='Enter the Number of Servings'></TextInput>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => {
-          navigation.navigate('Recipe', {
-            servingSize: serving,
-            Desc: "Combine the ingredients add salt to taste. Top French bread slices with mixture"
-          });
-        }}
-      >
-        <Text style={styles.buttonText}>View Recipe</Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
+  render() {
 
-function RecipeScreen({ route }) {
-  const { servingSize } = route.params;
-  const tomatoes = servingSize * 4
-  const basil = servingSize * 6 
-  const garlic = servingSize * 3
-  const oliveOil = servingSize * 3
-  const { Desc } = route.params;
+    SplashScreen.preventAutoHideAsync();
+    setTimeout(SplashScreen.hideAsync, 2000)
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.recipeTitle}>Bruschetta</Text>
-      <View style={styles.subContainer}>
-        <Text style={styles.subTitle}>Ingredients</Text>
-        <Text style={styles.textItem}>{tomatoes} plum tomatoes</Text>
-        <Text style={styles.textItem}>{basil} basil leaves</Text>
-        <Text style={styles.textItem}>{garlic} garlic cloves, chopped</Text>
-        <Text style={styles.textItem}>{oliveOil} TB olive oil</Text>
-      </View>
-      <View style={styles.subContainer}>
-        <Text style={styles.subTitle}>Directions</Text>
-        <Text style={styles.textItem}>{JSON.parse(JSON.stringify((Desc)))}</Text>
-      </View>
-    </View>
-  );
+    const { results, weight, height, danger } = this.state;
+
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.toolbar}>BMI Calculator</Text>
+        <ScrollView style={styles.content}>
+          <TextInput
+            ref={(input => { this.weightText = input;})}
+            style={styles.input}
+            onChangeText={this.onWeightChange}
+            value={weight}
+            placeholder="Weight in Pounds"
+          />
+          <TextInput
+            ref={(input => { this.heightText = input;})}
+            style={styles.input}
+            onChangeText={this.onHeightChange}
+            value={height}
+            placeholder="Height in Inches"
+          />
+          <TouchableOpacity onPress={this.onCalc} style={styles.button}>
+            <Text style={styles.buttonText}>Compute BMI</Text>
+          </TouchableOpacity>
+          {danger?<TextInput
+            style={styles.previewDanger}
+            value={results}
+            placeholder=" "
+            editable={false}
+            multiline
+          />:
+          <TextInput
+            style={styles.preview}
+            value={results}
+            placeholder=" "
+            editable={false}
+            multiline
+          />
+          }
+          <Text style={styles.text}>
+            Assessing Your BMI{"\n"}
+            {"\t"}{"\t"}{"\t"}Underweight: less than 18.5{"\n"}
+            {"\t"}{"\t"}{"\t"}Healthy: 18.5 to 24.9{"\n"}
+            {"\t"}{"\t"}{"\t"}Overweight: 25.0 to 29.9{"\n"}
+            {"\t"}{"\t"}{"\t"}Obese: 30.0 or higher{"\n"}
+          </Text>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  subContainer: {
-    margin: 15,
-    width: 300
+  toolbar: {
+    backgroundColor: '#f4511e',
+    color: '#fff',
+    textAlign: 'center',
+    padding: 30,
+    fontSize: 28,
+    fontWeight: 'bold'
   },
-  titleText: {
-    fontSize: 40,
-    fontWeight: 'bold',
-    marginBottom: 15
+  content: {
+    flex: 1,
+    padding: 10,
+  },
+  preview: {
+    color: '#000',
+    flex: 1,
+    height: 80,
+    fontSize: 30,
+    marginVertical: 40,
+    textAlign: 'center'
+  },
+  previewDanger: {
+    color: '#FF0000',
+    flex: 1,
+    height: 80,
+    fontSize: 30,
+    marginVertical: 40,
+    textAlign: 'center'
   },
   input: {
-    height: 40,
-    paddingHorizontal: 10,
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 20
+    backgroundColor: '#ecf0f1',
+    borderRadius: 3,
+    height: 45,
+    padding: 5,
+    marginBottom: 10,
+    flex: 1,
+    fontSize: 24
   },
   button: {
-    backgroundColor: "#838384",
-    height: 45,
-    paddingHorizontal: 10,
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#34495e',
+    padding: 10,
+    borderRadius: 3,
+    alignItems: 'center',
   },
   buttonText: {
-    fontSize: 20,
-    color: "#FFFFFF"
+    color: '#fff',
+    fontSize: 24
   },
-  recipeTitle: {
-    fontSize: 40,
-  },
-  subTitle: {
-    fontSize: 25,
-    alignSelf: "flex-start"
-  },
-  textItem: {
-    marginLeft: 25
-  },
-  warnText: {
-    color: "#dc5d2d"
-  },
-  hide: {
-    display: "none"
+  text: {
+    color: '#000',
+    fontSize: 20
   }
-})
-
-const Stack = createNativeStackNavigator();
-
-export default function App() {
-  return (
-    <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen name="Home" component={HomeScreen}
-        options={{ headerStyle: { backgroundColor: "#dc5d2d" },
-        headerTintColor: "#fff",
-        title: "Healthy Recipes"}} />
-        <Stack.Screen name="Recipe" component={RecipeScreen}
-        options={{ headerStyle: { backgroundColor: "#dc5d2d" },
-        headerTintColor: "#fff",
-        title: "Healthy Recipes"}} />
-      </Stack.Navigator>
-    </NavigationContainer>
-  );
-}
+});
